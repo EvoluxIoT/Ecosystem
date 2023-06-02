@@ -1,0 +1,69 @@
+﻿@model EvoluxIoT.Models.Synapse.Synapse
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Synapse</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Hostname)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Hostname)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UpdatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UpdatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ActivatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ActivatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NetworkStatus)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NetworkStatus)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NetworkStatusSince)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NetworkStatusSince)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Model)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Model.Model)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.OwnerId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.OwnerId)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Identifier" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>

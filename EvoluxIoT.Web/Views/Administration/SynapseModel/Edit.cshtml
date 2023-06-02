@@ -1,0 +1,56 @@
+﻿@model EvoluxIoT.Models.Synapse.SynapseModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>SynapseModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Model" class="control-label"></label>
+                <input asp-for="Model" class="form-control" />
+                <span asp-validation-for="Model" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Enabled" /> @Html.DisplayNameFor(model => model.Enabled)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="BuildStatus" class="control-label"></label>
+                <select asp-for="BuildStatus" asp-items="Html.GetEnumSelectList<EvoluxIoT.Models.Synapse.SynapseProductBuildStatus>()"> class="form-control"></select>
+                <span asp-validation-for="BuildStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReleasedAt" class="control-label"></label>
+                <input asp-for="ReleasedAt" class="form-control" />
+                <span asp-validation-for="ReleasedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

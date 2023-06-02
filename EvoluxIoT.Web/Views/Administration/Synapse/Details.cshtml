@@ -1,0 +1,66 @@
+﻿@model EvoluxIoT.Models.Synapse.Synapse
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Synapse</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Hostname)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Hostname)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UpdatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UpdatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ActivatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ActivatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NetworkStatus)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NetworkStatus)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NetworkStatusSince)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NetworkStatusSince)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Model)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Model.Model)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.OwnerId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.OwnerId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Identifier">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
