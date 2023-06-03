@@ -76,7 +76,7 @@ namespace EvoluxIoT.Models.Synapse
         /// Current product release status
         /// </summary>
         [Required]
-        [Display(Name = "Model Production Status")]
+        [Display(Name = "Product Status")]
         public SynapseProductBuildStatus BuildStatus { get; set; } = SynapseProductBuildStatus.Planning;
 
         /// <summary>

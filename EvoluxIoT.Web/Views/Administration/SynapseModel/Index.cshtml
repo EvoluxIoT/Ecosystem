@@ -2,76 +2,214 @@
 
 @{
     ViewData["Title"] = "Index";
+
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Planning = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Planning);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Testing = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Testing);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Production = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Production);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> EndOfLife = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.EndOfLife);
 }
-
-<h1>Index</h1>
-
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Administration</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Manage Synapse Templates</li>
+    </ol>
+</nav>
 <p>
-    <a asp-action="Create">Create New</a>
+<div class="d-grid gap-2">
+    <a class="btn btn-primary" asp-action="Create"><i class="fa-solid fa-add"></i> Create New</a>
+</div>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Model)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Enabled)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BuildStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ReleasedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdatedAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Model)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Enabled)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BuildStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReleasedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="accordion" id="accordionPanelsStayOpenExample">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+
+                <span>Planning <span class="badge text-bg-success"> @Planning.Where(model => model.Enabled).Count()</span> <span class="badge text-bg-danger"> @Planning.Where(model => !model.Enabled).Count()</span></span>
+            </button>
+        </h2>
+        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+            <div class="accordion-body row">
+
+                @foreach (var item in Planning)
+                {
+                    <div class="card text-center col" style="width:20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Model)</h5>
+                            <p class="card-text"></p>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">
+                                @if (item.Enabled)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge text-bg-danger">Inactive</span>
+                                }
+                                <span class="badge text-bg-primary">ID: @Html.DisplayFor(modelItem => item.Id)</span>
+                            </h6>
+                            <p></p>
+                            <p class="card-text lh-sm">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                            <p></p>
+                            <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i></a>
+                            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i></a>
+
+                        </div>
+                        <div class="card-footer text-muted">
+                            <span class="badge text-bg-light">Created at @Html.DisplayFor(modelItem => item.CreatedAt)</span>
+                            <span class="badge text-bg-warning">Updated at @Html.DisplayFor(modelItem => item.UpdatedAt)</span>
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+
+                <span>Testing <span class="badge text-bg-success"> @Testing.Where(model => model.Enabled).Count()</span> <span class="badge text-bg-danger"> @Testing.Where(model => !model.Enabled).Count()</span></span>
+            </button>
+        </h2>
+        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+                @foreach (var item in Testing)
+                {
+                    <div class="card text-center" style="width:20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Model)</h5>
+                            <p class="card-text"></p>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">
+                                @if (item.Enabled)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge text-bg-danger">Inactive</span>
+                                }
+                                <span class="badge text-bg-primary">ID: @Html.DisplayFor(modelItem => item.Id)</span>
+                            </h6>
+                            <p></p>
+                            <p class="card-text lh-sm">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                            <p></p>
+                            <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i></a>
+                            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i></a>
+
+                        </div>
+                        <div class="card-footer text-muted">
+                            <span class="badge text-bg-light">Created at @Html.DisplayFor(modelItem => item.CreatedAt)</span>
+                            <span class="badge text-bg-warning">Updated at @Html.DisplayFor(modelItem => item.UpdatedAt)</span>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+
+                <span>Production <span class="badge text-bg-success"> @Production.Where(model => model.Enabled).Count()</span> <span class="badge text-bg-danger"> @Production.Where(model => !model.Enabled).Count()</span></span>
+            </button>
+        </h2>
+        <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+                @foreach (var item in Production)
+                {
+                    <div class="card text-center" style="width:20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Model)</h5>
+                            <p class="card-text"></p>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">
+                                @if (item.Enabled)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge text-bg-danger">Inactive</span>
+                                }
+                                <span class="badge text-bg-primary">ID: @Html.DisplayFor(modelItem => item.Id)</span>
+                            </h6>
+                            <p></p>
+                            <p class="card-text lh-sm">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                            <p></p>
+                            <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i></a>
+                            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i></a>
+
+                        </div>
+                        <div class="card-footer text-muted">
+                            <span class="badge text-bg-light">Created at @Html.DisplayFor(modelItem => item.CreatedAt)</span>
+                            <span class="badge text-bg-warning">Updated at @Html.DisplayFor(modelItem => item.UpdatedAt)</span>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false" aria-controls="panelsStayOpen-collapseFour">
+                <span>End Of Life <span class="badge text-bg-success"> @EndOfLife.Where(model => model.Enabled).Count()</span> <span class="badge text-bg-danger"> @EndOfLife.Where(model => !model.Enabled).Count()</span></span>
+            </button>
+        </h2>
+        <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+                @foreach (var item in EndOfLife)
+                {
+                    <div class="card text-center" style="width:20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Model)</h5>
+                            <p class="card-text"></p>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">
+                                @if (item.Enabled)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge text-bg-danger">Inactive</span>
+                                }
+                                <span class="badge text-bg-primary">ID: @Html.DisplayFor(modelItem => item.Id)</span>
+                            </h6>
+                            <p></p>
+                            <p class="card-text lh-sm">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                            <p></p>
+                            <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i></a>
+                            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i></a>
+
+                        </div>
+                        <div class="card-footer text-muted">
+                            <span class="badge text-bg-light">Created at @Html.DisplayFor(modelItem => item.CreatedAt)</span>
+                            <span class="badge text-bg-warning">Updated at @Html.DisplayFor(modelItem => item.UpdatedAt)</span>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
