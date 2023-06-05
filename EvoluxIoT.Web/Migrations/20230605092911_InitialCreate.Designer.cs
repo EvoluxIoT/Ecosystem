@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EvoluxIoT.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230601165421_InitialCreate")]
+    [Migration("20230605092911_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -63,7 +63,7 @@ namespace EvoluxIoT.Web.Migrations
                     b.ToTable("Synapse");
                 });
 
-            modelBuilder.Entity("EvoluxIoT.Models.Synapse.SynapseModel", b =>
+            modelBuilder.Entity("EvoluxIoT.Models.Synapse.SynapseTemplate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -102,7 +102,7 @@ namespace EvoluxIoT.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SynapseModel");
+                    b.ToTable("SynapseTemplate");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -309,7 +309,7 @@ namespace EvoluxIoT.Web.Migrations
 
             modelBuilder.Entity("EvoluxIoT.Models.Synapse.Synapse", b =>
                 {
-                    b.HasOne("EvoluxIoT.Models.Synapse.SynapseModel", "Model")
+                    b.HasOne("EvoluxIoT.Models.Synapse.SynapseTemplate", "Model")
                         .WithMany()
                         .HasForeignKey("ModelId")
                         .OnDelete(DeleteBehavior.Cascade)

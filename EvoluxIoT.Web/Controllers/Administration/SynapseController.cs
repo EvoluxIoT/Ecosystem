@@ -49,7 +49,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
         // GET: Synapse/Create
         public IActionResult Create()
         {
-            ViewData["ModelId"] = new SelectList(_context.SynapseModel, "Id", "Model");
+            ViewData["ModelId"] = new SelectList(_context.SynapseTemplate, "Id", "Model");
             return View("~/Views/Administration/Synapse/Create.cshtml");
         }
 
@@ -61,7 +61,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
         public async Task<IActionResult> Create([Bind("Identifier,ModelId,OwnerId")] Synapse synapse)
         {
 #pragma warning disable CS8601 // Possível atribuição de referência nula.
-            synapse.Model = await _context.SynapseModel.FindAsync(synapse.ModelId);
+            synapse.Model = await _context.SynapseTemplate.FindAsync(synapse.ModelId);
 #pragma warning restore CS8601 // Possível atribuição de referência nula.
             ModelState.Clear();
             TryValidateModel(synapse);
@@ -78,7 +78,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
                     Debug.WriteLine(error.ErrorMessage,"Validação");
                 }
             }
-            ViewData["ModelId"] = new SelectList(_context.SynapseModel, "Id", "Model", synapse.ModelId);
+            ViewData["ModelId"] = new SelectList(_context.SynapseTemplate, "Id", "Model", synapse.ModelId);
             return View("~/Views/Administration/Synapse/Create.cshtml", synapse);
         }
 
@@ -95,7 +95,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
             {
                 return NotFound();
             }
-            ViewData["ModelId"] = new SelectList(_context.SynapseModel, "Id", "Model", synapse.ModelId);
+            ViewData["ModelId"] = new SelectList(_context.SynapseTemplate, "Id", "Model", synapse.ModelId);
             return View("~/Views/Administration/Synapse/Edit.cshtml", synapse);
         }
 
@@ -131,7 +131,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ModelId"] = new SelectList(_context.SynapseModel, "Id", "Model", synapse.ModelId);
+            ViewData["ModelId"] = new SelectList(_context.SynapseTemplate, "Id", "Model", synapse.ModelId);
             return View("~/Views/Administration/Synapse/Edit.cshtml", synapse);
         }
 

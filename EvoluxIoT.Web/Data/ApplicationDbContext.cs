@@ -11,6 +11,6 @@ namespace EvoluxIoT.Web.Data
         {
         }
         public DbSet<EvoluxIoT.Models.Synapse.Synapse> Synapse { get; set; } = default!;
-        public DbSet<EvoluxIoT.Models.Synapse.SynapseModel> SynapseModel { get; set; } = default!;
+        public DbSet<EvoluxIoT.Models.Synapse.SynapseTemplate> SynapseTemplate { get; set; } = default!;
     }
 }

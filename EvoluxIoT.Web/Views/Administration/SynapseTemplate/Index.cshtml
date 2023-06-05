@@ -1,12 +1,12 @@
-﻿@model IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel>
+﻿@model IEnumerable<EvoluxIoT.Models.Synapse.SynapseTemplate>
 
 @{
     ViewData["Title"] = "Index";
 
-    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Planning = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Planning);
-    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Testing = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Testing);
-    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> Production = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.Production);
-    IEnumerable<EvoluxIoT.Models.Synapse.SynapseModel> EndOfLife = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseProductBuildStatus.EndOfLife);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseTemplate> Planning = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseTemplateBuildStatus.Planning);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseTemplate> Testing = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseTemplateBuildStatus.Testing);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseTemplate> Production = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseTemplateBuildStatus.Production);
+    IEnumerable<EvoluxIoT.Models.Synapse.SynapseTemplate> EndOfLife = Model.Where(model => model.BuildStatus == EvoluxIoT.Models.Synapse.SynapseTemplateBuildStatus.EndOfLife);
 }
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">

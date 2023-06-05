@@ -51,7 +51,7 @@ namespace EvoluxIoT.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SynapseModel",
+                name: "SynapseTemplate",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -67,7 +67,7 @@ namespace EvoluxIoT.Web.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SynapseModel", x => x.Id);
+                    table.PrimaryKey("PK_SynapseTemplate", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -194,9 +194,9 @@ namespace EvoluxIoT.Web.Migrations
                 {
                     table.PrimaryKey("PK_Synapse", x => x.Identifier);
                     table.ForeignKey(
-                        name: "FK_Synapse_SynapseModel_ModelId",
+                        name: "FK_Synapse_SynapseTemplate_ModelId",
                         column: x => x.ModelId,
-                        principalTable: "SynapseModel",
+                        principalTable: "SynapseTemplate",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -274,7 +274,7 @@ namespace EvoluxIoT.Web.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "SynapseModel");
+                name: "SynapseTemplate");
         }
     }
 }

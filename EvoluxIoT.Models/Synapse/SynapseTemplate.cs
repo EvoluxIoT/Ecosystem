@@ -9,44 +9,44 @@ using System.ComponentModel;
 
 namespace EvoluxIoT.Models.Synapse
 {
-    public enum SynapseProductBuildStatus
+    public enum SynapseTemplateBuildStatus
     {
 
         /// <summary>
-        /// This product is being tested by it's creators
+        /// This template is being planned by it's creators
         /// </summary>
         Planning = 0,
 
         /// <summary>
-        /// This product is being tested by it's creators
+        /// This template is being tested by it's creators
         /// </summary>
         Testing = 1,
 
         /// <summary>
-        /// This product is ready to be used by everyone
+        /// This template is ready to be used by everyone
         /// </summary>
         Production = 2,
 
         [Display(Name = "End of Life")]
         /// <summary>
-        /// This product have reached his end of life
+        /// This template have reached his end of life
         /// </summary>
         EndOfLife = 3,
     }
 
     /// <summary>
-    /// Represents a new Synapse product, a device enabled to connect and interact with the EvoluxIoT ecossystem
+    /// Represents a new Synapse Template, a model defining a group of devices enabled to connect and interact with the EvoluxIoT ecossystem
     /// </summary>
-    public class SynapseModel
+    public class SynapseTemplate
     {
         /// <summary>
-        /// Synapse Product ID within the database
+        /// Synapse Template ID within the database
         /// </summary>
         [Key]
         public int Id { get; set; }
 
         /// <summary>
-        /// Synapse Product Name up to 64 characters (ex. "SynapsePod")
+        /// Synapse Template Name up to 64 characters (ex. "SynapsePod")
         /// </summary>
         [Required]
         [MaxLength(64)]
@@ -67,39 +67,36 @@ namespace EvoluxIoT.Models.Synapse
         public string? Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Product enabled for production usage?
+        /// Template enabled for Templateion usage?
         /// </summary>
         [Required]
         public bool Enabled { get; set; } = false;
 
         /// <summary>
-        /// Current product release status
+        /// Current Template release status
         /// </summary>
         [Required]
-        [Display(Name = "Product Status")]
-        public SynapseProductBuildStatus BuildStatus { get; set; } = SynapseProductBuildStatus.Planning;
+        [Display(Name = "Template Status")]
+        public SynapseTemplateBuildStatus BuildStatus { get; set; } = SynapseTemplateBuildStatus.Planning;
 
         /// <summary>
-        /// When was this Synapse product released?
+        /// When was this Synapse Template released?
         /// </summary>
         [DataType(DataType.DateTime)]
         public DateTime? ReleasedAt { get; set; } = null;
 
         /// <summary>
-        /// When was this Synapse product created?
+        /// When was this Synapse Template created?
         /// </summary>
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// When was this Synapse product last updated?
+        /// When was this Synapse Template last updated?
         /// </summary>
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-
-
-
     }
 }

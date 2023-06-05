@@ -58,7 +58,7 @@ namespace EvoluxIoT.Models.Synapse
         public DateTime? NetworkStatusSince { get; set; } = null;
 
         public int ModelId { get; set; }        
-        public SynapseModel Model { get; set; }
+        public SynapseTemplate Model { get; set; }
 
         public string? OwnerId { get; set; } = null;
 
