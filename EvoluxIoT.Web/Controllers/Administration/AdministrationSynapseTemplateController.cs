@@ -10,11 +10,12 @@ using EvoluxIoT.Web.Data;
 
 namespace EvoluxIoT.Web.Controllers.Administration
 {
-    public class SynapseTemplateController : Controller
+
+    public class AdministrationSynapseTemplateController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public SynapseTemplateController(ApplicationDbContext context)
+        public AdministrationSynapseTemplateController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -61,7 +62,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
             if (ModelState.IsValid)
             {
                 synapseTemplate.UpdatedAt = synapseTemplate.CreatedAt = DateTime.Now;
-                _context.Add(synapseModel);
+                _context.Add(synapseTemplate);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -91,7 +92,7 @@ namespace EvoluxIoT.Web.Controllers.Administration
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Model,Description,Enabled,BuildStatus,ReleasedAt")] SynapseTemplate synapseTemplate)
         {
-            if (id != synapseModel.Id)
+            if (id != synapseTemplate.Id)
             {
                 return NotFound();
             }

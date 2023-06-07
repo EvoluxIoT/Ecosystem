@@ -4,9 +4,14 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
-
-<h4>SynapseModel</h4>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Administration</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","AdministrationSynapseTemplate")">Synapse Templates</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create</li>
+    </ol>
+</nav>
 <hr />
 <div class="row">
     <div class="col-md-4">

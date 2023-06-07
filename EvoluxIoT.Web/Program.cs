@@ -1,4 +1,5 @@
 using EvoluxIoT.Web.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -45,12 +46,6 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "Administration",
-    
-
-    pattern: "administration/{controller=Home}/{action=Index}/{id?}");
 
 
 app.MapControllerRoute(

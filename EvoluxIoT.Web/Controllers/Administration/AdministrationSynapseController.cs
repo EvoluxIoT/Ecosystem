@@ -11,11 +11,11 @@ using System.Diagnostics;
 
 namespace EvoluxIoT.Web.Controllers.Administration
 {
-    public class SynapseController : Controller
+    public class AdministrationSynapseController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public SynapseController(ApplicationDbContext context)
+        public AdministrationSynapseController(ApplicationDbContext context)
         {
             _context = context;
         }

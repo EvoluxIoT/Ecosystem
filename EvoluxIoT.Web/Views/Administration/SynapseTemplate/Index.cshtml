@@ -12,7 +12,7 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
         <li class="breadcrumb-item"><a href="#">Administration</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Manage Synapse Templates</li>
+        <li class="breadcrumb-item active" aria-current="page">Synapse Templates</li>
     </ol>
 </nav>
 <p>
@@ -29,7 +29,12 @@
             </button>
         </h2>
         <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-            <div class="accordion-body row">
+            <div class="accordion-body">
+
+                @if (Planning.Count() == 0)
+                {
+                    <p class="text-center">No synapse templates available!</p>
+                }
 
                 @foreach (var item in Planning)
                 {
@@ -78,6 +83,10 @@
         </h2>
         <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
             <div class="accordion-body">
+                @if (Testing.Count() == 0)
+                {
+                    <p class="text-center">No synapse templates available!</p>
+                }
 
                 @foreach (var item in Testing)
                 {
@@ -125,7 +134,10 @@
         </h2>
         <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
             <div class="accordion-body">
-
+                @if (Production.Count() == 0)
+                {
+                    <p class="text-center">No synapse templates available!</p>
+                }
                 @foreach (var item in Production)
                 {
                     <div class="card text-center" style="width:20rem;">
@@ -172,7 +184,10 @@
         </h2>
         <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
             <div class="accordion-body">
-
+                @if (EndOfLife.Count() == 0)
+                {
+                    <p class="text-center">No synapse templates available!</p>
+                }
                 @foreach (var item in EndOfLife)
                 {
                     <div class="card text-center" style="width:20rem;">
