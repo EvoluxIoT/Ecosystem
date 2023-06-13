@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<EvoluxIoT.Models.Synapse.Synapse>
+
+@{
     ViewData["Title"] = "Synapses";
 }
 
@@ -12,7 +14,7 @@
         Register Device
     </button>
 
-        <table class="table">
+    <table id="synapses" class="table">
             <thead class="thead-dark">
                 <tr>
                     <th scope="col">Device ID</th>
@@ -23,32 +25,86 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th scope="row"> <i class="fa-solid fa-fingerprint" /> 5316191164430650570L</th>
-                <td><i class="fa-solid fa-microchip"></i> SynapsePod Crystal</td>
-                <td><i class="fa-solid fa-server"></i> PWRBoard</td>
+
+                @foreach(var synapse in Model)
+                {
+                    <tr>
+                        <th scope="row">
+                            <i class="fa-solid fa-fingerprint" /> @Html.DisplayFor(modelItem => synapse.Identifier)
+                        </th>
                     <td>
-
-
-                    <i class="fa-solid fa-wifi"></i> Online since 1 week
-
+                        <i class="fa-solid fa-microchip"></i>
+                        @Html.DisplayFor(modelItem => synapse.Model.Name)
+                        @Html.DisplayFor(modelItem => synapse.Model.Model)
                     </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"></path>
-                            </svg>
-                        </button>
-                    <button type="button" class="btn btn-warning">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                    <button type="button" class="btn btn-danger">
-                        <i class="fa-solid fa-link-slash"></i>
-                    </button>
+                    @if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline && synapse.NetworkStatusSince is null)
+                    {
+                        <td>-</td>
+                    } else
+                    {
+
+                        <td><i class="fa-solid fa-server"></i> @Html.DisplayFor(modelItem => synapse.Hostname)</td>
+                    }
+
+
+                        <td>
+                            @if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online)
+                            {
+                            <span><i class="fa-solid fa-wifi"></i> @synapse.NetworkStatus since @synapse.NetworkStatusSince</span>
+                            }
+                            else if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline && synapse.NetworkStatusSince is null)
+                            {
+                            <span> <i style="color:yellow" class="fa-solid fa-triangle-exclamation"></i> Never Online</span>
+                        } else
+                        {
+                            <span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline since @synapse.NetworkStatusSince</span>
+                            
+                        }
                     </td>
-                </tr>
+                        <td>
+                            <button type="button" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="btn btn-warning">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            <button type="button" onclick="dialogUnlinkSynapse('@synapse.Identifier')" class="btn btn-danger">
+                                <i class="fa-solid fa-link-slash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+
             </tbody>
         </table>
 
 
 </div>
+@section scripts{
+    <script>
+
+        const confirm_dialog = Swal.mixin({
+            customClass: {
+                cancelButton: 'btn btn-success',
+                confirmButton: 'btn btn-danger'
+            },
+            buttonsStyling: false
+        })
+        
+
+        function dialogUnlinkSynapse(synapseIdentifier) {
+            confirm_dialog.fire({
+                title: 'Synapse Unlinking Confirmation',
+                text: "While linked to your EvoluxIoT account, your Synapse becomes a more powerful device by letting you access exclusive features such as remote scripting, remote monitoring and management, anti-theft system and device sharing. Are you sure you want to proceed?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Unlink Synapse',
+                cancelButtonText: 'Keep it on your account',
+                reverseButtons: true
+            })
+        }
+
+    </script>
+}

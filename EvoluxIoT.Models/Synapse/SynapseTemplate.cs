@@ -63,6 +63,7 @@ namespace EvoluxIoT.Models.Synapse
         /// Optional detailed description of this Synapse Model up to 128 characters
         /// </summary>
         [MaxLength(128)]
+        [DataType(DataType.MultilineText)]
         
         public string? Description { get; set; } = string.Empty;
 
@@ -98,5 +99,10 @@ namespace EvoluxIoT.Models.Synapse
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+        override public string ToString()
+        {
+            return $"{Name} {Model}";
+        }
     }
 }
