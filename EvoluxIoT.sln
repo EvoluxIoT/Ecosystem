@@ -6,9 +6,12 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvoluxIoT.Web", "EvoluxIoT.Web\EvoluxIoT.Web.csproj", "{4FE0F632-A891-46E2-A047-566504458F2A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9C668293-DC72-405E-97B9-C4EF4F5ED7DC} = {9C668293-DC72-405E-97B9-C4EF4F5ED7DC}
+		{B89FAAF2-A812-4F86-9B68-DE49D0515FD1} = {B89FAAF2-A812-4F86-9B68-DE49D0515FD1}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvoluxIoT.Models", "EvoluxIoT.Models\EvoluxIoT.Models.csproj", "{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvoluxIoT.Models", "EvoluxIoT.Models\EvoluxIoT.Models.csproj", "{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvoluxIoT.SynapseLink", "EvoluxIoT.SynapseLink\EvoluxIoT.SynapseLink.csproj", "{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +27,10 @@ Global
 		{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

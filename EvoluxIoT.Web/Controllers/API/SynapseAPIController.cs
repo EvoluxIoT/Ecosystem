@@ -9,6 +9,7 @@ using EvoluxIoT.Models.Synapse;
 using EvoluxIoT.Web.Data;
 using EvoluxIoT.Web.Models;
 using System.Net;
+using EvoluxIoT.Web.Services;
 
 namespace EvoluxIoT.Web.Controllers.API
 {
@@ -18,9 +19,12 @@ namespace EvoluxIoT.Web.Controllers.API
     {
         private readonly ApplicationDbContext _context;
 
-        public SynapseAPIController(ApplicationDbContext context)
+        private readonly MqttClientService _mqtt;
+
+        public SynapseAPIController(ApplicationDbContext context, MqttClientService mqtt)
         {
             _context = context;
+            _mqtt = mqtt;
         }
 
         // GET: api/Synapse
@@ -187,7 +191,38 @@ namespace EvoluxIoT.Web.Controllers.API
 
             response.SetSuccess(synapse);
             return response.ToJsonResult(HttpStatusCode.OK);
-        }   
+        }
+
+        [HttpPost("reboot/{id}")]
+        public async Task<IActionResult> RebootSynapse(string id)
+        {
+            // Response object
+            EvoluxActionResponse response = new EvoluxActionResponse();
+
+            // Check if the database context is null
+            if (_context.Synapse == null)
+            {
+                response.SetDatabaseContextEntityFailure();
+                return response.ToJsonResult(HttpStatusCode.NotFound);
+            }
+
+            // Check if the synapse exists
+            var synapse = await _context.Synapse.FindAsync(id);
+            if (synapse == null)
+            {
+                response.SetEntityNotFoundFailure();
+                return response.ToJsonResult(HttpStatusCode.NotFound);
+            }
+
+            // Send the reboot command to the synapse
+            
+
+            // Let the ORM know that the synapse has been modified
+            _context.Entry(synapse).State = EntityState.Modified;
+
+            response.Success = await _mqtt.Reboot(id);
+            return response.ToJsonResult(HttpStatusCode.OK);
+        }
 
 
         private bool SynapseExists(string id)

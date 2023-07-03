@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using EvoluxIoT.Web.Services;
 
 namespace EvoluxIoT.Web.Controllers
 {
@@ -9,9 +10,12 @@ namespace EvoluxIoT.Web.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public SynapseController(ApplicationDbContext context)
+        private readonly MqttClientService _mqtt;
+
+        public SynapseController(ApplicationDbContext context, MqttClientService mqtt)
         {
             _context = context;
+            _mqtt = mqtt;
         }
 
         // GET: Synapse
@@ -20,7 +24,22 @@ namespace EvoluxIoT.Web.Controllers
         {
             var user = User.Identity?.Name;
             var applicationDbContext = _context.Synapse.Where(a => a.OwnerId == user).Include(s => s.Model);
-            return View(await applicationDbContext.ToListAsync());
+            var synapses = await applicationDbContext.ToListAsync();
+           
+            foreach (var item in synapses)
+            {
+                if (await _mqtt.Heartbeat(item.Identifier))
+                {
+                    item.NetworkStatus = EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online;
+                }
+                else
+                {
+                    item.NetworkStatus = EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline;
+                }
+                
+                
+            }
+            return View(synapses);
         }
 
         [HttpPost, ActionName("Unlink")]

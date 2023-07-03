@@ -19,7 +19,6 @@
                 <tr>
                     <th scope="col">Device ID</th>
                     <th scope="col">Device Model</th>
-                    <th scope="col">Hostname</th>
                     <th scope="col">Status</th>
                     <th scope="col">Manage</th>
                 </tr>
@@ -37,27 +36,19 @@
                         @Html.DisplayFor(modelItem => synapse.Model.Name)
                         @Html.DisplayFor(modelItem => synapse.Model.Model)
                     </td>
-                    @if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline && synapse.NetworkStatusSince is null)
-                    {
-                        <td>-</td>
-                    } else
-                    {
-
-                        <td><i class="fa-solid fa-server"></i> @Html.DisplayFor(modelItem => synapse.Hostname)</td>
-                    }
 
 
                         <td>
                             @if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online)
                             {
-                            <span><i class="fa-solid fa-wifi"></i> @synapse.NetworkStatus since @synapse.NetworkStatusSince</span>
+                            <span><i class="fa-solid fa-wifi"></i> @synapse.NetworkStatus</span>
                             }
                             else if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline && synapse.NetworkStatusSince is null)
                             {
                             <span> <i style="color:yellow" class="fa-solid fa-triangle-exclamation"></i> Never Online</span>
                         } else
                         {
-                            <span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline since @synapse.NetworkStatusSince</span>
+                            <span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline</span>
                             
                         }
                     </td>
@@ -67,7 +58,7 @@
                                     <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"></path>
                                 </svg>
                             </button>
-                            <button type="button" class="btn btn-warning">
+                            <button type="button" onclick="dialogRebootSynapse('@synapse.Identifier')" class="btn btn-warning">
                                 <i class="fa-solid fa-rotate-right"></i>
                             </button>
                             <button type="button" onclick="dialogUnlinkSynapse('@synapse.Identifier')" class="btn btn-danger">
@@ -92,6 +83,48 @@
             },
             buttonsStyling: false
         })
+
+        function dialogRebootSynapse(synapseIdentifier) {
+            confirm_dialog.fire({
+                title: 'Synapse Reboot Confirmation',
+                text: "Are you sure you want to reboot this Synapse? This action will cause the device to restart and may take a few minutes to come back online.",
+icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Reboot',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: '/api/synapse/reboot/' + synapseIdentifier,
+                        type: 'POST',
+                        data: null,
+                        success: function (result) {
+                            if (result.success) {
+                                Swal.fire(
+                                    {
+                                    title: 'Synapse Rebooted!',
+                                    text: 'The Synapse is now rebooting. It may take a few minutes to come back online.',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }
+                                )
+                            } else {
+                                Swal.fire(
+                                    {
+                                    title: 'Synapse Reboot Failed!',
+                                    text: 'The Synapse could not be rebooted. Please try again later.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                }
+                                )
+                            }
+                        }
+                    })
+                }
+                })
+        }
         
 
         function dialogUnlinkSynapse(synapseIdentifier) {
@@ -103,7 +136,36 @@
                 confirmButtonText: 'Unlink Synapse',
                 cancelButtonText: 'Keep it on your account',
                 reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: '/api/synapse/link/' + synapseIdentifier,
+                        type: 'PATCH',
+                        data: null,
+                        success: function (result) {
+                            if (result.success) {
+                                Swal.fire(
+                                    {
+                                    title: 'Synapse Unlinked!',
+                                    text: 'The synapse has been removed from your account.'
+                                    }
+                                )
+                                window.location.reload();
+                            } else {
+                                Swal.fire(
+                                    {
+                                    title: 'Synapse Unlink Error!',
+                                    text: 'It was impossible to us to remove the synapse from your account! Try again later!.'
+                                    }
+                                )
+                            }
+                        }
+                    });
+
+                }
             })
+
         }
 
     </script>
