@@ -15,6 +15,9 @@ namespace EvoluxIoT.Web.Services
 
         ManagedMqttClientOptions __mqtt_client_options_builder = null;
 
+
+        public Dictionary<string, (string, string, DateTime)> codes = new Dictionary<string, (string, string, DateTime)>();
+
         public bool SetupComplete { get { return __mqtt_client != null; } }
 
         public void SetupClient()
@@ -72,7 +75,7 @@ namespace EvoluxIoT.Web.Services
             await __mqtt_client.UnsubscribeAsync(topic);
         }
 
-        public async Task<int> MaxVersion(string synapse_id)
+        public async Task<int?> MaxVersion(string synapse_id)
         {
             return await SynapseLinkCommands.MaxVersion(__mqtt_client, synapse_id);
         }
@@ -82,14 +85,35 @@ namespace EvoluxIoT.Web.Services
             return await SynapseLinkCommands.Heartbeat(__mqtt_client, synapse_id);
         }
 
-        public async Task<bool> Reboot(string synapse_id)
+        public async Task<bool?> Reboot(string synapse_id)
         {
             return await SynapseLinkCommands.Reboot(__mqtt_client, synapse_id);
         }
 
+        public async Task<bool?> DigitalRead(string synapse_id, int pin)
+        {
+            return await SynapseLinkCommands.DigitalRead(__mqtt_client, synapse_id, pin);
+        }
 
+        public async Task<bool?> DigitalWrite(string synapse_id, int pin, bool value)
+        {
+            return await SynapseLinkCommands.DigitalWrite(__mqtt_client, synapse_id, pin, value);
+        }
 
+        public async Task<int?> AnalogRead(string synapse_id, int pin)
+        {
+            return await SynapseLinkCommands.AnalogRead(__mqtt_client, synapse_id, pin);
+        }
 
+        public async Task<string?> DisplayRead(string synapse_id)
+        {
+            return await SynapseLinkCommands.DisplayRead(__mqtt_client, synapse_id);
+        }
+
+        public async Task<string?> DisplayWrite(string synapse_id, string text)
+        {
+            return await SynapseLinkCommands.DisplayWrite(__mqtt_client, synapse_id, text);
+        }
 
     }
 }

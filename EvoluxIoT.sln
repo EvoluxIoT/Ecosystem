@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvoluxIoT.Web", "EvoluxIoT.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvoluxIoT.Models", "EvoluxIoT.Models\EvoluxIoT.Models.csproj", "{9C668293-DC72-405E-97B9-C4EF4F5ED7DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvoluxIoT.SynapseLink", "EvoluxIoT.SynapseLink\EvoluxIoT.SynapseLink.csproj", "{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvoluxIoT.SynapseLink", "EvoluxIoT.SynapseLink\EvoluxIoT.SynapseLink.csproj", "{B89FAAF2-A812-4F86-9B68-DE49D0515FD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,290 @@
+﻿@model EvoluxIoT.Models.Synapse.Synapse
+
+@{
+    ViewData["Title"] = "Manage Synapse";
+}
+
+
+<div id="synapse-overview" class="container text-center">
+
+    
+
+    <button type="button" onclick="dialogRebootSynapse('@Model.Identifier')" class="btn btn-warning">
+        <i class="fa-solid fa-rotate-right"></i> Reboot
+    </button>
+    <button type="button" onclick="dialogUnlinkSynapse('@Model.Identifier')" class="btn btn-danger">
+        <i class="fa-solid fa-link-slash"></i> Unlink
+    </button>
+
+    <h1>
+        @Model.Identifier
+        <span class="device-status">
+            @if (Model.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online)
+            {
+                <span> <i style="color:green;" class="fa-solid fa-circle"></i> Online</span>
+            }
+            else
+            {
+                <span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline</span>
+            }
+        </span>
+    </h1>
+    <button onclick="dialogDigitalWrite(7,true)">Ligar LED</button>
+    <button onclick="dialogDigitalWrite(7,false)">Desligar LED</button>
+    <button onclick="dialogDigitalRead(7)">Estado Botão</button>
+    <button onclick="dialogDisplayWrite('Heloo')">PWM</button>
+
+    <input type="text" id="display-input"/>
+</div>
+
+@section scripts{
+    <script>
+
+        const confirm_dialog = Swal.mixin({
+            customClass: {
+                cancelButton: 'btn btn-success',
+                confirmButton: 'btn btn-danger'
+            },
+            buttonsStyling: false
+        })
+
+        function dialogEditSynapse(id) {
+
+            window.location.href = "/Synapse/Manage/" + id;
+        }
+
+        function dialogAnalogRead(pin) {
+            $.ajax({
+                url: '/api/synapse/analogread/@(Model.Identifier)/' + pin,
+                type: 'GET',
+                data: null,
+                success: function (result) {
+                    if (result.success) {
+                        Swal.fire(
+                            {
+                                title: 'Analog Read Success!',
+                                text: result.data,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Analog Read Failed!',
+                                text: 'The analog read could not be executed. Please try again later.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    }
+                }
+            })
+        }
+
+        function dialogDigitalRead(pin) {
+            $.ajax({
+                url: '/api/synapse/digitalread/@(Model.Identifier)/' + pin,
+                type: 'GET',
+                data: null,
+                success: function (result) {
+                    if (result.success) {
+                        Swal.fire(
+                            {
+                                title: 'Digital Write Success!',
+                                text: result.data,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Digital Write Failed!',
+                                text: 'The digital write could not be executed. Please try again later.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    }
+                }
+            })
+        }
+
+        function dialogDisplayWrite(text) {
+            $.ajax({
+                url: '/api/synapse/displaywrite/@(Model.Identifier)/' + text,
+                type: 'GET',
+                data: null,
+                success: function (result) {
+                    if (result.success) {
+                        Swal.fire(
+                            {
+                                title: 'Display Write Success!',
+                                text: 'The display write was successfully executed.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Display Write Failed!',
+                                text: 'The display write could not be executed. Please try again later.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    }
+                }
+            })
+        }
+
+        function dialogDisplayRead() {
+            $.ajax({
+                url: '/api/synapse/displayread/@(Model.Identifier)',
+                type: 'GET',
+                data: null,
+                success: function (result) {
+                    if (result.success) {
+                        Swal.fire(
+                            {
+                                title: 'Display Read Success!',
+                                text: result.data,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    } else {
+                        Swal.fire(
+                            {
+                                title: 'Display Read Failed!',
+                                text: 'The display read could not be executed. Please try again later.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }
+                        )
+                    }
+                }
+            })
+        }
+
+        function dialogDigitalWrite(pin, value) {
+            
+                    $.ajax({
+                        url: '/api/synapse/digitalwrite/@(Model.Identifier)/' + pin + '/' + value,
+                        type: 'GET',
+                        data: null,
+                        success: function (result) {
+                            if (result.success) {
+                                Swal.fire(
+                                    {
+                                        title: 'Digital Write Success!',
+                                        text: 'The digital write was successfully executed.',
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }
+                                )
+                            } else {
+                                Swal.fire(
+                                    {
+                                        title: 'Digital Write Failed!',
+                                        text: 'The digital write could not be executed. Please try again later.',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    }
+                                )
+                            }
+                        }
+                    })
+        }
+
+        function dialogRebootSynapse(synapseIdentifier) {
+            confirm_dialog.fire({
+                title: 'Synapse Reboot Confirmation',
+                text: "Are you sure you want to reboot this Synapse? This action will cause the device to restart and may take a few minutes to come back online.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Reboot',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: '/api/synapse/reboot/' + synapseIdentifier,
+                        type: 'POST',
+                        data: null,
+                        success: function (result) {
+                            if (result.success) {
+                                Swal.fire(
+                                    {
+                                        title: 'Synapse Rebooted!',
+                                        text: 'The Synapse is now rebooting. It may take a few minutes to come back online.',
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }
+                                )
+                                document.getElementById("device-" + synapseIdentifier).getElementsByClassName("device-status")[0].innerHTML = '<span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline</span>';
+                            } else {
+                                Swal.fire(
+                                    {
+                                        title: 'Synapse Reboot Failed!',
+                                        text: 'The Synapse could not be rebooted. Please try again later.',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    }
+                                )
+                            }
+                        }
+                    })
+                }
+            })
+        }
+
+        function dialogUnlinkSynapse(synapseIdentifier) {
+            confirm_dialog.fire({
+                title: 'Synapse Unlinking Confirmation',
+                text: "While linked to your EvoluxIoT account, your Synapse becomes a more powerful device by letting you access exclusive features such as remote scripting, remote monitoring and management, anti-theft system and device sharing. Are you sure you want to proceed?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Unlink Synapse',
+                cancelButtonText: 'Keep it on your account',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: '/api/synapse/link/' + synapseIdentifier,
+                        type: 'PATCH',
+                        data: null,
+                        success: function (result) {
+                            if (result.success) {
+                                Swal.fire(
+                                    {
+                                        title: 'Synapse Unlinked!',
+                                        text: 'The synapse has been removed from your account.'
+                                    }
+                                ).then((result) => {
+                                    window.location.href = "/Synapse";
+                                })
+                            } else {
+                                Swal.fire(
+                                    {
+                                        title: 'Synapse Unlink Error!',
+                                        text: 'It was impossible to us to remove the synapse from your account! Try again later!.'
+                                    }
+                                )
+                            }
+                        }
+                    });
+
+                }
+            })
+
+        }
+
+    </script>
+}
+
+

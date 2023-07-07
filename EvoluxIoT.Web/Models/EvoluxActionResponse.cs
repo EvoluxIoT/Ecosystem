@@ -10,6 +10,7 @@ namespace EvoluxIoT.Web.Models
         public const string DatabaseContextEntityNull = "[ERROR] The database context for a givem entity is not correctly initialized. This can be happening due to a outdated or incomplete/broken database migration or a broken database table/scheme in our database server";
         public const string EntityNotFound = "[ERROR] The entity was not found in the database. This can be happening due to the action that is currently being evoked requires the specified entity to exist in the database such as editing or deleting it";
         public const string EntityFound = "[ERROR] The entity was found in the database. This can be happening due to the action that is currently being evoked requires the specified entity to not exist in the database such as creating it";
+        public const string EntityAlreadyLinked = "[ERROR] The entity is already linked to another entity. This can be happening due to the action that is currently being evoked requires the specified entity to not be linked to another entity such as linking it to another entity";
     }
 
     public static class EvoluxActionResponseExtensions
@@ -89,6 +90,29 @@ namespace EvoluxIoT.Web.Models
             response.Data = null;
             response.Exception = exception;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SetEntityFoundFailure(this EvoluxActionResponse response, Exception? exception = null)
+        {
+            response.Success = false;
+            response.Message = EvoluxActionResponseMessages.EntityFound;
+            response.Data = null;
+            response.Exception = exception;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void SetEntityAlreadyLinkedFailure(this EvoluxActionResponse response, Exception? exception = null)
+        {
+            response.Success = false;
+            response.Message = EvoluxActionResponseMessages.EntityAlreadyLinked;
+            response.Data = null;
+            response.Exception = exception;
+        }
+
     }
 
 

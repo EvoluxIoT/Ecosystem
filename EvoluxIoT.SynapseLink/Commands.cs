@@ -4,159 +4,565 @@ using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace EvoluxIoT.SynapseLink
 {
-    public static class SynapseLinkCommands
+
+    public class SynapseLinkCommands
     {
-        // Command codes used by the Synapse Link protocol
 
-        public const byte COMMAND_MAXVERSION = 0x00;
-        public const byte COMMAND_HEARTBEAT = 0x01;
-        public const byte COMMAND_ACKNOWLEDGE = 0x02;
-        public const byte COMMAND_REBOOT = 0x03;
-        public const byte COMMAND_DIGITALREAD = 0x04;
-        public const byte COMMAND_DIGITALWRITE = 0x05;
-        public const byte COMMAND_ANALOGREAD = 0x06;
-        public const byte COMMAND_ANALOGWRITE = 0x07;
-        public const byte COMMAND_PWMREAD = 0x08;
-        public const byte COMMAND_PWMWRITE = 0x09;
-        public const byte COMMAND_DISPLAYWRITE = 0x0A;
 
+        // Command Codes
+        public const int COMMAND_HELLO = 0x00;
+        public const int COMMAND_GOODBYE = 0x01;
+        public const int COMMAND_MAXVERSION = 0x02;
+        public const int COMMAND_HEARTBEAT = 0x03;
+        public const int COMMAND_ACKNOWLEDGE = 0x04;
+        public const int COMMAND_REBOOT = 0x05;
+        public const int COMMAND_DIGITALREAD = 0x06;
+        public const int COMMAND_DIGITALWRITE = 0x07;
+        public const int COMMAND_ANALOGREAD = 0x08;
+        public const int COMMAND_DISPLAYREAD = 0x0A;
+        public const int COMMAND_DISPLAYWRITE = 0x0B;
+
+        // SynapseLink Options
         public const int RESPONSE_TIMEOUT = 5000;
 
-        public static (string, List<dynamic>, int) ParseMessage(string message)
+        // Command Parsing
+        public static (int, List<String>, int) ParseCommand(string message)
         {
+            List<String> parameters = new List<String>();
+
+            // Don't parse sent messages
             if (!message.StartsWith("!"))
             {
-                return (null, null, -1);
-            }
-            var command = message.Split(":,:");
-
-            // Command Name
-            var command_name = command[0];
-
-            // Event Number
-            var event_number = command[command.Length - 1];
-
-            // Parameters
-            var parameters = new List<dynamic>();
-            for (int i = 1; i < command.Length - 1; i++)
-            {
-                parameters.Add(command[i]);
+                return (-1, parameters, -1);
             }
 
-            return (command_name, parameters, int.Parse(event_number));
+            // Remove sent message indicator
+            message = message.Substring(1);
+
+            // Split message into command parts
+            List<String> data = message.Split(":,:").ToList();
+
+            // Command must have at least 2 parts (command and event_id)
+            if (data.Count < 2)
+            {
+                return (-1, parameters, -1);
+            }
+
+            // Parameterless command
+            else if (data.Count == 2)
+            {
+                return (Convert.ToInt32(data[0]), parameters, Convert.ToInt32(data[1]));
+            }   
+            // Command with parameters
+            else
+            {
+                // Add parameters to list
+                for (int i = 1; i < data.Count - 1; i++)
+                {
+                    parameters.Add(data[i]);
+                }
+
+                return (Convert.ToInt32(data[0]), parameters, Convert.ToInt32(data[data.Count - 1]));
+            }
         }
 
-        
-
-        // Methods for evoking commands
-
-        public async static Task<bool> Reboot(IManagedMqttClient mqtt, string synapse_id)
+        // Command Building
+        public static string BuildCommand(int command, List<String> parameters, int event_id)
         {
-            AutoResetEvent AcknoledgeReceived = new AutoResetEvent(false);
-            AutoResetEvent RebootReceived = new AutoResetEvent(false);
 
 
+            string message = command.ToString();
 
-            mqtt.ApplicationMessageReceivedAsync += (e) =>
+            // Add parameters to message
+            foreach (string parameter in parameters)
             {
-                var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-                var (command_name, parameters, event_number) = ParseMessage(message);
+                message += ":,:" + parameter;
+            }
 
-                if (command_name is null) return Task.CompletedTask;
-                if (command_name == $"!{COMMAND_ACKNOWLEDGE}" && (string)parameters[0] == "reboot" && (string)parameters[1] == "[]")
-                {
-                    AcknoledgeReceived.Set();
-                }
-                else if (command_name == $"!{COMMAND_REBOOT}")
-                {
-                    RebootReceived.Set();
-                }
-                return Task.CompletedTask;
-            };
+            // Add event_id to message
+            message += ":,:" + event_id.ToString();
 
-            await mqtt.SubscribeAsync(synapse_id);
-            await mqtt.PublishAsync(synapse_id, "reboot");
-
-
-            AcknoledgeReceived.WaitOne(RESPONSE_TIMEOUT);
-
-            return RebootReceived.WaitOne(RESPONSE_TIMEOUT);
-
+            return message;
         }
 
-        public async static Task<bool> Heartbeat(IManagedMqttClient mqtt, string synapse_id)
+        // Command Handling
+
+        public static async Task<bool> WaitAcknoledgeFor(IManagedMqttClient mqtt, string synapse_id, (int, List<String>, int) command_check, int timeout_miliseconds = 5000)
         {
+            // Acknoledge successfuly received?
+            bool acknoledged = false;
 
-            AutoResetEvent AcknoledgeReceived = new AutoResetEvent(false);
-            AutoResetEvent HeartbeatReceived = new AutoResetEvent(false);
-
-            mqtt.ApplicationMessageReceivedAsync += (e) =>
+            // Monitor timeout
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
             {
-                var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-                var (command_name, parameters, event_number) = ParseMessage(message);
-                if (command_name is null) return Task.CompletedTask;
-                if (command_name == $"!{COMMAND_ACKNOWLEDGE}" && (string)parameters[0] == "heartbeat" && (string)parameters[1] == "[]")
-                {
-                    AcknoledgeReceived.Set();
-                }
-                else if (command_name == $"!{COMMAND_HEARTBEAT}")
-                {
-                    HeartbeatReceived.Set();
-                }
-                return Task.CompletedTask;
+                timeout_monitor.Stop();
+                acknoledged = false;
             };
 
+            Task handler(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var check = new List<String> { command_check.Item1.ToString() };
+                check.AddRange(command_check.Item2);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == check)
+                {
+                    timeout_monitor.Stop();
+                    acknoledged = true;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler;
+
             await mqtt.SubscribeAsync(synapse_id);
-            await mqtt.PublishAsync(synapse_id, "heartbeat");
+            timeout_monitor.Start();
 
-            AcknoledgeReceived.WaitOne(RESPONSE_TIMEOUT);
-
-            var state = HeartbeatReceived.WaitOne(RESPONSE_TIMEOUT);
+            while (timeout_monitor.Enabled) { 
+                await Task.Delay(100); 
+            }
+            mqtt.ApplicationMessageReceivedAsync -= handler;
             await mqtt.UnsubscribeAsync(synapse_id);
+
+            return acknoledged;
+        }
+
+        // Commands
+
+        public static async Task<int?> MaxVersion(IManagedMqttClient mqtt, string synapse_id, int timeout_miliseconds = 5000)
+        {
+            int? max_version = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_MAXVERSION, new List<String>(), 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_MAXVERSION && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    max_version = Convert.ToInt32(parameters[0]);
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && max_version != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            if (acknoledged)
+            {
+
+                return max_version;
+            } else
+            {
+                return null;
+            }
+        }
+
+        public static async Task<bool> Heartbeat(IManagedMqttClient mqtt, string synapse_id, int timeout_miliseconds = 5000)
+        {
+            bool heartbeat = false;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_HEARTBEAT, new List<String>(), 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_HEARTBEAT && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    heartbeat = true;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && heartbeat == true)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            return heartbeat;
+        }
+
+        public static async Task<bool?> Reboot(IManagedMqttClient mqtt, string synapse_id, int timeout_miliseconds = 5000)
+        {
+            bool? reboot = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_REBOOT, new List<String>(), 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_REBOOT && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    reboot = true;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && reboot == true)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            return reboot;
+        }
+
+        public static async Task<bool?> DigitalRead(IManagedMqttClient mqtt, string synapse_id, int port, int timeout_miliseconds = 5000)
+        {
+            bool? state = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_DIGITALREAD, new List<String> { port.ToString() }, 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_DIGITALREAD && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    state = Convert.ToBoolean(Convert.ToInt32(parameters[0]));
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && state != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
             return state;
+
         }
 
-        public async static Task<int> MaxVersion(IManagedMqttClient mqtt, string synapse_id)
+        public static async Task<bool?> DigitalWrite(IManagedMqttClient mqtt, string synapse_id, int port, bool state, int timeout_miliseconds = 5000)
         {
+            bool? success = null;
+            var acknoledged = false;
 
-            AutoResetEvent AcknoledgeReceived = new AutoResetEvent(false);
-            AutoResetEvent MaxVersionReceived = new AutoResetEvent(false);
-
-            int maxversion = -1;
-
-            mqtt.ApplicationMessageReceivedAsync += (e) =>
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
             {
-                var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-                var (command_name, parameters, event_number) = ParseMessage(message);
-                if (command_name is null) return Task.CompletedTask;
-                if (command_name == $"!{COMMAND_ACKNOWLEDGE}" && (string)parameters[0] == "maxversion" && (string)parameters[1] == "[]")
-                {
-                    AcknoledgeReceived.Set();
-                }
-                else if (command_name == $"!{COMMAND_MAXVERSION}")
-                {
-                    maxversion = int.Parse(parameters[0]);
-                    MaxVersionReceived.Set();
-                }
-                return Task.CompletedTask;
+                timeout_monitor.Stop();
             };
 
+            (int, List<String>, int) send_command = (COMMAND_DIGITALWRITE, new List<String> { port.ToString(), Convert.ToInt32(state).ToString() }, 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_DIGITALWRITE && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    success = Convert.ToBoolean(Convert.ToInt32(parameters[0]));
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
             await mqtt.SubscribeAsync(synapse_id);
-            await mqtt.PublishAsync(synapse_id, "maxversion");
-            // MQTTnet will receive a ack message from the Synapse Link device and the response of max version on a second message
-            AcknoledgeReceived.WaitOne(RESPONSE_TIMEOUT);
-            MaxVersionReceived.WaitOne(RESPONSE_TIMEOUT);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && success != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
             await mqtt.UnsubscribeAsync(synapse_id);
 
-            return maxversion;
+            return success;
         }
+
+        public static async Task<int?> AnalogRead(IManagedMqttClient mqtt, string synapse_id, int port, int timeout_miliseconds = 5000)
+        {
+            int? value = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_ANALOGREAD, new List<String> { port.ToString() }, 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_ANALOGREAD && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    value = Convert.ToInt32(parameters[0]);
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && value != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            return value;
+        }
+
+        public static async Task<string?> DisplayRead(IManagedMqttClient mqtt, string synapse_id, int timeout_miliseconds = 5000)
+        {
+            string? text_o = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_DISPLAYREAD, new List<String>(), 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_DISPLAYREAD && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    text_o = parameters[0];
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && text_o != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            return text_o;
+        }
+
+        public static async Task<string?> DisplayWrite(IManagedMqttClient mqtt, string synapse_id, string text, int timeout_miliseconds = 5000)
+        {
+            string? text_o = null;
+            var acknoledged = false;
+
+            System.Timers.Timer timeout_monitor = new System.Timers.Timer(timeout_miliseconds);
+            timeout_monitor.AutoReset = false;
+            timeout_monitor.Elapsed += (sender, e) =>
+            {
+                timeout_monitor.Stop();
+            };
+
+            (int, List<String>, int) send_command = (COMMAND_DISPLAYWRITE, new List<String> { text }, 0);
+
+            Task handler_2(MqttApplicationMessageReceivedEventArgs payload)
+            {
+                var message = Encoding.UTF8.GetString(payload.ApplicationMessage.PayloadSegment);
+
+                var (command, parameters, event_id) = ParseCommand(message);
+
+                if (command == COMMAND_ACKNOWLEDGE && payload.ApplicationMessage.Topic == synapse_id && parameters == new List<string> { send_command.Item1.ToString() })
+                {
+                    acknoledged = true;
+                }
+                if (command == COMMAND_DISPLAYWRITE && payload.ApplicationMessage.Topic == synapse_id)
+                {
+                    text_o = parameters[0];
+                }
+
+                return Task.CompletedTask;
+            }
+
+            mqtt.ApplicationMessageReceivedAsync += handler_2;
+
+            await mqtt.SubscribeAsync(synapse_id);
+            await mqtt.PublishAsync(synapse_id, BuildCommand(send_command.Item1, send_command.Item2, send_command.Item3));
+            timeout_monitor.Start();
+
+            while (timeout_monitor.Enabled)
+            {
+                await Task.Delay(100);
+                if (acknoledged && text_o != null)
+                {
+                    timeout_monitor.Stop();
+                }
+            }
+            await mqtt.UnsubscribeAsync(synapse_id);
+
+            return text_o;
+        }
+
+
+
+
+
+
 
 
 

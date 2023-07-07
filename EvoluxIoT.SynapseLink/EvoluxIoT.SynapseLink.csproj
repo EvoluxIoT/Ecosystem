@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Commandss.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.2.1.781" />
   </ItemGroup>
 

@@ -30,16 +30,52 @@ namespace EvoluxIoT.Web.Controllers
             {
                 if (await _mqtt.Heartbeat(item.Identifier))
                 {
+                    if (item.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline)
+                    {
+                        item.NetworkStatusSince = DateTime.Now;
+                    }
+
                     item.NetworkStatus = EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online;
                 }
                 else
                 {
+                    if (item.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online)
+                    {
+                        item.NetworkStatusSince = DateTime.Now;
+                    }
                     item.NetworkStatus = EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Offline;
                 }
+
                 
-                
+
+
             }
+            await _context.SaveChangesAsync();
             return View(synapses);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Manage(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var synapse = await _context.Synapse
+                .Include(s => s.Model)
+                .FirstOrDefaultAsync(m => m.Identifier == id);
+            if (synapse == null)
+            {
+                return NotFound();
+            }
+
+            if (synapse.OwnerId != User.Identity?.Name)
+            {
+                return Forbid();
+            }
+
+            return View(synapse);
         }
 
         [HttpPost, ActionName("Unlink")]

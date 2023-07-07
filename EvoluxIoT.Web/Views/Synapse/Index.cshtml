@@ -6,7 +6,7 @@
 
 <div id="synapse-overview" class="container text-center">
     
-    <button type="button" class="btn btn-primary">
+    <button type="button" onclick="dialogLinkSynapse()" class="btn btn-primary">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path>
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
@@ -27,18 +27,18 @@
 
                 @foreach(var synapse in Model)
                 {
-                    <tr>
+                    <tr class="device-list" id="device-@synapse.Identifier">
                         <th scope="row">
                             <i class="fa-solid fa-fingerprint" /> @Html.DisplayFor(modelItem => synapse.Identifier)
                         </th>
-                    <td>
-                        <i class="fa-solid fa-microchip"></i>
-                        @Html.DisplayFor(modelItem => synapse.Model.Name)
-                        @Html.DisplayFor(modelItem => synapse.Model.Model)
-                    </td>
-
-
                         <td>
+                            <i class="fa-solid fa-microchip"></i>
+                            @Html.DisplayFor(modelItem => synapse.Model.Name)
+                            @Html.DisplayFor(modelItem => synapse.Model.Model)
+                        </td>
+
+
+                        <td class="device-status">
                             @if (synapse.NetworkStatus == EvoluxIoT.Models.Synapse.SynapseNetworkStatus.Online)
                             {
                             <span><i class="fa-solid fa-wifi"></i> @synapse.NetworkStatus</span>
@@ -51,12 +51,13 @@
                             <span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline</span>
                             
                         }
-                    </td>
+                        </td>
                         <td>
-                            <button type="button" class="btn btn-primary">
+                        <button type="button" onclick="dialogEditSynapse('@synapse.Identifier')" class="btn btn-primary">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"></path>
                                 </svg>
+
                             </button>
                             <button type="button" onclick="dialogRebootSynapse('@synapse.Identifier')" class="btn btn-warning">
                                 <i class="fa-solid fa-rotate-right"></i>
@@ -84,6 +85,49 @@
             buttonsStyling: false
         })
 
+        function dialogEditSynapse(id) {
+
+            window.location.href = "/Synapse/Manage/" + id;
+        }
+
+        function refreshSynapseStatus() {
+            let synapses = document.getElementsByClassName("device-list");
+
+            var synapseStatuses = {};
+
+            $.ajax({
+                url: '/api/synapse/heartbeat/' + "@User.Identity?.Name",
+                type: 'GET',
+                data: null,
+                success: function (result) {
+                    
+                    synapseStatuses = result;
+                    for (var key in synapseStatuses) {
+                        if (synapseStatuses.hasOwnProperty(key)) {
+                            let value = synapseStatuses[key];
+                            let synapse = document.getElementById("device-" + key);
+                            if (value == true) {
+                                synapse.getElementsByClassName("device-status")[0].innerHTML = "<span><i class='fa-solid fa-wifi'></i> Online</span>";
+                            } else if (value == false) {
+                                synapse.getElementsByClassName("device-status")[0].innerHTML = "<span><i class='fa-solid fa-circle'></i> Offline</span>";
+                            }
+
+
+                        }
+                    }
+                },
+                error: function (result) {
+                    
+                }
+            });
+            
+
+            
+        }
+
+
+        setInterval(refreshSynapseStatus, 10000);
+
         function dialogRebootSynapse(synapseIdentifier) {
             confirm_dialog.fire({
                 title: 'Synapse Reboot Confirmation',
@@ -110,6 +154,7 @@ icon: 'warning',
                                     confirmButtonText: 'OK'
                                 }
                                 )
+                                document.getElementById("device-" + synapseIdentifier).getElementsByClassName("device-status")[0].innerHTML = '<span> <i style="color:red;" class="fa-solid fa-circle"></i> Offline</span>';
                             } else {
                                 Swal.fire(
                                     {
@@ -124,6 +169,111 @@ icon: 'warning',
                     })
                 }
                 })
+        }
+
+        function dialogLinkSynapse() {
+            var sid = null;
+
+            Swal.fire({
+                title: 'Enter your synapse identifier:',
+                input: 'text',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Link',
+                showLoaderOnConfirm: true,
+                preConfirm: (synapse_id) => {
+                    return fetch(`/api/synapse/asklink/@(User.Identity?.Name)/` + synapse_id)
+                        .then(response => {
+                            if (!response.ok) {
+                                var err = new Error(response.statusText)
+                                switch (response.status) {
+                                    case 404:
+                                        err.text = "Synapse not found!";
+                                        break;
+                                    case 400:
+                                        err.text = "Synapse already linked to another account!";
+                                        break;
+                                    case 424:
+                                        err.text = "Synapse is offline!";
+                                        break;
+                                    default:
+                                        err.text = "Unknown error!";
+                                        break;
+                                }
+                                throw err;
+                            }
+                            sid = synapse_id;
+                            return response.json()
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(
+                                `${error.text}`
+                            )
+                        })
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Request pin
+
+Swal.fire({
+                            title: 'Enter your synapse confirmation pin:',
+                            input: 'text',
+                            inputAttributes: {
+                                autocapitalize: 'off'
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Link',
+                            showLoaderOnConfirm: true,
+                            preConfirm: (synapse_pin) => {
+                                return fetch(`/api/synapse/confirmlink/@(User.Identity?.Name)/` + sid + "/" + synapse_pin)
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            var err = new Error(response.statusText)
+                                            switch (response.status) {
+                                                case 404:
+                                                    err.text = "Synapse not found!";
+                                                    break;
+                                                case 400:
+                                                    err.text = "Synapse already linked to another account!";
+                                                    break;
+                                                case 424:
+                                                    err.text = "Synapse is offline!";
+                                                    break;
+                                                case 403:
+                                                    err.text = "Invalid PIN!";
+                                                    break;
+                                                default:
+                                                    err.text = "Unknown error!";
+                                                    break;
+                                            }
+                                            throw err;
+                                        }
+                                        return response.json()
+                                    })
+                                    .catch(error => {
+                                        Swal.showValidationMessage(
+                                            `${error.text}`
+                                        )
+                                    })
+                            },
+                            allowOutsideClick: () => !Swal.isLoading()
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire(
+                                    {
+                                    title: 'Synapse Linked!',
+                                    text: 'The synapse has been linked to your account.'
+                                    }
+                                ).then((result) => {
+                                    window.location.reload();
+                                })
+                            }
+                        })
+                    }
+            })
         }
         
 
