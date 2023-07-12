@@ -35,10 +35,91 @@
     <button onclick="dialogDisplayWrite('Heloo')">PWM</button>
 
     <input type="text" id="display-input"/>
+    <br />
+
+    <div id="synapse-keypad">
+        <div id="synapse-keypad-row-1">
+
+            <div id="synapse-keypad-button-1">
+                0
+            </div>
+            <div id="synapse-keypad-button-2">
+                0
+            </div>
+            <div id="synapse-keypad-button-3">
+                0
+            </div>
+            <div id="synapse-keypad-button-4">
+                0
+            </div>
+        </div>
+
+        <div id="synapse-keypad-row-2">
+            <div id="synapse-keypad-button-5">
+                0
+            </div>
+            <div id="synapse-keypad-button-6">
+                0
+            </div>
+            <div id="synapse-keypad-button-7">
+                0
+            </div>
+            <div id="synapse-keypad-button-8">
+                0
+            </div>
+        </div>
+
+        <div id="synapse-keypad-row-3">
+            <div id="synapse-keypad-button-9">
+                0
+            </div>
+            <div id="synapse-keypad-button-10">
+                0
+            </div>
+            <div id="synapse-keypad-button-11">
+                0
+            </div>
+            <div id="synapse-keypad-button-12">
+                0
+            </div>
+        </div>
+
+    </div>
 </div>
 
 @section scripts{
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+
     <script>
+
+        var connection = new signalR.HubConnectionBuilder().withUrl("/synapsehub")
+            .withAutomaticReconnect().build();
+        connection.on("KeyboardUpdate", function (user, message) {
+            document.getElementById("synapse-keypad-button-1").innerText = message[0];
+            document.getElementById("synapse-keypad-button-2").innerText = message[1];
+            document.getElementById("synapse-keypad-button-3").innerText = message[2];
+            document.getElementById("synapse-keypad-button-4").innerText = message[3];
+            document.getElementById("synapse-keypad-button-5").innerText = message[4];
+            document.getElementById("synapse-keypad-button-6").innerText = message[5];
+            document.getElementById("synapse-keypad-button-7").innerText = message[6];
+            document.getElementById("synapse-keypad-button-8").innerText = message[7];
+            document.getElementById("synapse-keypad-button-9").innerText = message[8];
+            document.getElementById("synapse-keypad-button-10").innerText = message[9];
+            document.getElementById("synapse-keypad-button-11").innerText = message[10];
+            document.getElementById("synapse-keypad-button-12").innerText = message[11];
+        });
+        connection.start().then(function () {
+            console.log("connected");
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+
+    </script>
+
+    <script>
+
+
 
         const confirm_dialog = Swal.mixin({
             customClass: {

@@ -75,6 +75,8 @@ namespace EvoluxIoT.Web.Controllers
                 return Forbid();
             }
 
+            _mqtt.SubscribeKeyboard(User.Identity.Name ,synapse.Identifier);
+
             return View(synapse);
         }
 
